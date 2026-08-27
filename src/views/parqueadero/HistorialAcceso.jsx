@@ -16,7 +16,7 @@ import {
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilHistory, cilReload } from '@coreui/icons'
-import { supabase } from '../../../lib/supabase'
+import { supabase } from '../../lib/supabase'
 
 const HistorialAcceso = () => {
   const [registros, setRegistros] = useState([])

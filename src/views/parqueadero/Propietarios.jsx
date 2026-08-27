@@ -17,7 +17,7 @@ import {
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilPeople, cilReload } from '@coreui/icons'
-import { supabase } from '../../supabaseClient'
+import { supabase } from '../../lib/supabase'
 
 const Propietarios = () => {
   const [propietarios, setPropietarios] = useState([])
@@ -28,24 +28,21 @@ const Propietarios = () => {
     setLoading(true)
     setError(null)
     try {
-      // Consulta con relación Supabase (Foreign Key entre propietarios y vehiculos)
+      // Consultamos directamente de la tabla 'vehiculos' donde ya residen los datos
       const { data, error: fetchError } = await supabase
-        .from('propietarios')
+        .from('vehiculos')
         .select(`
           id,
-          nombre,
-          cedula,
+          propietario_nombre,
+          cedula_enmascarada,
           correo_institucional,
-          correo_microsoft,
-          foto_url,
+          foto_propietario_url,
           autorizado,
-          vehiculos (
-            placa,
-            marca,
-            modelo
-          )
+          placa,
+          marca,
+          modelo
         `)
-        .order('nombre', { ascending: true })
+        .order('propietario_nombre', { ascending: true })
 
       if (fetchError) throw fetchError
       setPropietarios(data || [])
@@ -86,8 +83,7 @@ const Propietarios = () => {
                 <CTableHeaderCell>Nombre del Propietario</CTableHeaderCell>
                 <CTableHeaderCell>Cédula</CTableHeaderCell>
                 <CTableHeaderCell>Correo Institucional</CTableHeaderCell>
-                <CTableHeaderCell>Correo Microsoft</CTableHeaderCell>
-                <CTableHeaderCell>Vehículos Asociados</CTableHeaderCell>
+                <CTableHeaderCell>Vehículo Asociado</CTableHeaderCell>
                 <CTableHeaderCell>Estado Acceso</CTableHeaderCell>
               </CTableRow>
             </CTableHead>
@@ -97,33 +93,24 @@ const Propietarios = () => {
                   <CTableRow key={item.id}>
                     <CTableDataCell className="text-center">
                       <CAvatar
-                        src={item.foto_url || 'https://placehold.co/100x100?text=User'}
+                        src={item.foto_propietario_url || 'https://placehold.co/100x100?text=User'}
                         size="md"
                         status={item.autorizado ? 'success' : 'danger'}
                       />
                     </CTableDataCell>
                     <CTableDataCell>
-                      <div className="fw-semibold">{item.nombre || 'Sin Registro'}</div>
+                      <div className="fw-semibold">{item.propietario_nombre || 'Sin Registro'}</div>
                     </CTableDataCell>
                     <CTableDataCell>
-                      <small className="font-monospace">{item.cedula || 'N/A'}</small>
+                      <small className="font-monospace">{item.cedula_enmascarada || 'N/A'}</small>
                     </CTableDataCell>
                     <CTableDataCell>
                       <small>{item.correo_institucional || 'N/A'}</small>
                     </CTableDataCell>
                     <CTableDataCell>
-                      <small className="text-muted">{item.correo_microsoft || 'N/A'}</small>
-                    </CTableDataCell>
-                    <CTableDataCell>
-                      {item.vehiculos && item.vehiculos.length > 0 ? (
-                        item.vehiculos.map((v, idx) => (
-                          <CBadge key={idx} color="info" className="font-monospace text-dark me-1 mb-1">
-                            {v.placa} ({v.marca} {v.modelo})
-                          </CBadge>
-                        ))
-                      ) : (
-                        <small className="text-muted">Sin vehículo</small>
-                      )}
+                      <CBadge color="info" className="font-monospace text-dark me-1 mb-1">
+                        {item.placa} ({item.marca} {item.modelo})
+                      </CBadge>
                     </CTableDataCell>
                     <CTableDataCell>
                       {item.autorizado ? (
@@ -136,7 +123,7 @@ const Propietarios = () => {
                 ))
               ) : (
                 <CTableRow>
-                  <CTableDataCell colSpan="7" className="text-center py-4 text-muted">
+                  <CTableDataCell colSpan="6" className="text-center py-4 text-muted">
                     No existen propietarios registrados.
                   </CTableDataCell>
                 </CTableRow>
