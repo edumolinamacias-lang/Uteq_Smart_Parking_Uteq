@@ -44,12 +44,10 @@ const Tabs = React.lazy(() => import('./views/components/tabs/Tabs'))
 const Tables = React.lazy(() => import('./views/components/tables/Tables'))
 const Toasts = React.lazy(() => import('./views/components/toasts/Toasts'))
 const Tooltips = React.lazy(() => import('./views/components/tooltips/Tooltips'))
-const ListaVehiculos = React.lazy(() => import('./views/parqueadero/ListaVehiculos'))
+const Dashboard = React.lazy(() => import('./views/dashboard/Dashboard'))
 const Vehiculos = React.lazy(() => import('./views/parqueadero/Vehiculos'))
 const Puestos = React.lazy(() => import('./views/parqueadero/Puestos'))
-const Propietarios = React.lazy(() => import('./views/parqueadero/Propietarios'))
-const HistorialAcceso = React.lazy(() => import("./views/parqueadero/HistorialAcceso"));
-
+const HistorialAcceso = React.lazy(() => import('./views/parqueadero/HistorialAcceso'))
 //Forms
 const ChecksRadios = React.lazy(() => import('./views/forms/checks-radios/ChecksRadios'))
 const ChipInput = React.lazy(() => import('./views/forms/chip-input/ChipInput'))
@@ -90,10 +88,9 @@ const Widgets = React.lazy(() => import('./views/widgets/Widgets'))
 export const routes = [
   { path: '/', exact: true, name: 'Home' },
   { path: '/dashboard', name: 'Dashboard', element: Dashboard },
-  { path: '/parqueadero/vehiculos', name: 'Vehículos y Propietarios', element: ListaVehiculos },
   { path: '/vehiculos', name: 'Vehículos', element: Vehiculos },
+  { path: '/propietarios', name: 'Propietarios', element: Vehiculos },
   { path: '/puestos', name: 'Puestos', element: Puestos },
   { path: '/historial', name: 'Historial de Registros', element: HistorialAcceso },
-  { path: '/propietarios', name: 'Propietarios', element: Propietarios }
 ]
 export default routes

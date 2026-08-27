@@ -1,55 +1,56 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useState, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
 
-const COLUMNAS_PUBLICAS = `
-  id,
-  placa,
-  marca,
-  modelo,
-  anio,
-  color,
-  tipo,
-  foto_url,
-  foto_fuente_url,
-  foto_propietario_url,
-  cedula_enmascarada,
-  propietario_nombre,
-  correo_institucional,
-  autorizado
-`
-
 export const useVehiculos = () => {
-  const [vehiculos, setVehiculos] = useState([])
-  const [cargando, setCargando] = useState(true)
-  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
 
-  const cargarVehiculos = useCallback(async () => {
-    setCargando(true)
-    setError('')
-
-    const { data, error: errorSupabase } = await supabase
-      .from('vehiculos')
-      .select(COLUMNAS_PUBLICAS)
-      .order('propietario_nombre', { ascending: true })
-
-    if (errorSupabase) {
-      setVehiculos([])
-      setError(errorSupabase.message)
-    } else {
-      setVehiculos(data ?? [])
+  const fetchVehiculos = useCallback(async () => {
+    setLoading(true)
+    try {
+      const { data, error } = await supabase.from('vehiculos').select('*').order('id')
+      if (error) throw error
+      return data
+    } catch (err) {
+      setError(err.message)
+      return []
+    } finally {
+      setLoading(false)
     }
-
-    setCargando(false)
   }, [])
 
-  useEffect(() => {
-    cargarVehiculos()
-  }, [cargarVehiculos])
-
-  return {
-    vehiculos,
-    cargando,
-    error,
-    recargar: cargarVehiculos,
+  const addVehiculo = async (payload) => {
+    try {
+      const { error } = await supabase.from('vehiculos').insert([payload])
+      if (error) throw error
+      return true
+    } catch (err) {
+      setError(err.message)
+      return false
+    }
   }
+
+  const updateVehiculo = async (id, payload) => {
+    try {
+      const { error } = await supabase.from('vehiculos').update(payload).eq('id', id)
+      if (error) throw error
+      return true
+    } catch (err) {
+      setError(err.message)
+      return false
+    }
+  }
+
+  const deleteVehiculo = async (id) => {
+    try {
+      const { error } = await supabase.from('vehiculos').delete().eq('id', id)
+      if (error) throw error
+      return true
+    } catch (err) {
+      setError(err.message)
+      return false
+    }
+  }
+
+  return { fetchVehiculos, addVehiculo, updateVehiculo, deleteVehiculo, loading, error }
 }
