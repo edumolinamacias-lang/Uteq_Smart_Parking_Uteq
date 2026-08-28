@@ -21,7 +21,7 @@ const _nav = [
   },
   {
     component: CNavItem,
-    name: 'Vehículos',
+    name: 'Vehículos y Propietarios',
     to: '/vehiculos',
     icon: <CIcon icon={cilCarAlt} customClassName="nav-icon" />,
   },
@@ -33,7 +33,7 @@ const _nav = [
   },
   {
     component: CNavItem,
-    name: 'Historial Registros',
+    name: 'Historial de Parqueo',
     to: '/historial',
     icon: <CIcon icon={cilHistory} customClassName="nav-icon" />,
   },

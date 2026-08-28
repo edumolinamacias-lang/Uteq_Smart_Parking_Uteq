@@ -7,10 +7,17 @@ export const useVehiculos = () => {
 
   const fetchVehiculos = useCallback(async () => {
     setLoading(true)
+    setError(null)
+
     try {
-      const { data, error } = await supabase.from('vehiculos').select('*').order('id')
+      const { data, error } = await supabase
+        .from('vehiculos')
+        .select('*')
+        .order('id', { ascending: false })
+
       if (error) throw error
-      return data
+
+      return data || []
     } catch (err) {
       setError(err.message)
       return []
@@ -20,37 +27,95 @@ export const useVehiculos = () => {
   }, [])
 
   const addVehiculo = async (payload) => {
+    setLoading(true)
+    setError(null)
+
     try {
-      const { error } = await supabase.from('vehiculos').insert([payload])
+      const { data, error } = await supabase
+        .from('vehiculos')
+        .insert([payload])
+        .select()
+
       if (error) throw error
-      return true
+
+      return {
+        success: true,
+        data,
+      }
     } catch (err) {
       setError(err.message)
-      return false
+
+      return {
+        success: false,
+        error: err.message,
+      }
+    } finally {
+      setLoading(false)
     }
   }
 
   const updateVehiculo = async (id, payload) => {
+    setLoading(true)
+    setError(null)
+
     try {
-      const { error } = await supabase.from('vehiculos').update(payload).eq('id', id)
+      const { data, error } = await supabase
+        .from('vehiculos')
+        .update(payload)
+        .eq('id', id)
+        .select()
+
       if (error) throw error
-      return true
+
+      return {
+        success: true,
+        data,
+      }
     } catch (err) {
       setError(err.message)
-      return false
+
+      return {
+        success: false,
+        error: err.message,
+      }
+    } finally {
+      setLoading(false)
     }
   }
 
   const deleteVehiculo = async (id) => {
+    setLoading(true)
+    setError(null)
+
     try {
-      const { error } = await supabase.from('vehiculos').delete().eq('id', id)
+      const { error } = await supabase
+        .from('vehiculos')
+        .delete()
+        .eq('id', id)
+
       if (error) throw error
-      return true
+
+      return {
+        success: true,
+      }
     } catch (err) {
       setError(err.message)
-      return false
+
+      return {
+        success: false,
+        error: err.message,
+      }
+    } finally {
+      setLoading(false)
     }
   }
 
-  return { fetchVehiculos, addVehiculo, updateVehiculo, deleteVehiculo, loading, error }
+  return {
+    fetchVehiculos,
+    addVehiculo,
+    updateVehiculo,
+    deleteVehiculo,
+    loading,
+    error,
+  }
 }

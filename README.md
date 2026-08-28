@@ -1,298 +1,158 @@
-# CoreUI Free React Admin Template - Built for AI-Assisted Development [![Tweet](https://img.shields.io/twitter/url/http/shields.io.svg?style=social&logo=twitter)](https://twitter.com/intent/tweet?text=CoreUI%20-%20Free%React%204%20Admin%20Template%20&url=https://coreui.io&hashtags=bootstrap,admin,template,dashboard,panel,free,angular,react,vue)
+# Smart Parking UTEQ - Sistema de Gestión de Parqueadero Inteligente
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
-[![@coreui coreui](https://img.shields.io/badge/@coreui%20-coreui-lightgrey.svg?style=flat-square)](https://github.com/coreui/coreui)
-[![npm package][npm-coreui-badge]][npm-coreui]
-[![NPM downloads][npm-coreui-download]][npm-coreui]
-[![@coreui react](https://img.shields.io/badge/@coreui%20-react-lightgrey.svg?style=flat-square)](https://github.com/coreui/react)
-[![npm package][npm-coreui-react-badge]][npm-coreui-react]
-[![NPM downloads][npm-coreui-react-download]][npm-coreui-react]  
+Sistema web completo desarrollado con **React**, **Vite**, **CoreUI** y **Supabase** para la administración de espacios de estacionamiento, el monitoreo de puestos, el registro del historial de accesos y la gestión de vehículos y propietarios.
 
-[npm-coreui]: https://www.npmjs.com/package/@coreui/coreui
-[npm-coreui-badge]: https://img.shields.io/npm/v/@coreui/coreui.png?style=flat-square
-[npm-coreui-download]: https://img.shields.io/npm/dm/@coreui/coreui.svg?style=flat-square
-[npm-coreui-react]: https://www.npmjs.com/package/@coreui/react
-[npm-coreui-react-badge]: https://img.shields.io/npm/v/@coreui/react.png?style=flat-square
-[npm-coreui-react-download]: https://img.shields.io/npm/dm/@coreui/react.svg?style=flat-square
-[npm]: https://www.npmjs.com/package/@coreui/react
+## Funcionalidades
 
-[![Bootstrap Admin Template](https://assets.coreui.io/products/coreui-free-bootstrap-admin-template-light-dark.webp)](https://coreui.io/product/free-react-admin-template/)
+- Inicio de sesion, registro y recuperacion de contrasena.
+- Panel principal con informacion del parqueadero.
+- Gestion de vehiculos y propietarios.
+- Gestion de puestos de estacionamiento.
+- Registro e historial de accesos.
+- Operaciones de consulta, creacion, actualizacion y eliminacion conectadas a Supabase.
+- Interfaz responsive basada en CoreUI y Bootstrap.
 
-CoreUI is meant to be the UX game changer. Pure & transparent code is devoid of redundant components, so the app is light enough to offer ultimate user experience. This means mobile devices also, where the navigation is just as easy and intuitive as on a desktop or laptop. The CoreUI Layout API lets you customize your project for almost any device – be it Mobile, Web or WebApp – CoreUI covers them all!
+## Vistas del sistema
 
-## Table of Contents
+- **Gestión de vehículos y propietarios:** permite crear, modificar y eliminar registros vehiculares, incluyendo información del propietario, cédula, estado de autorización y fotografía cuando corresponda.
+- **Monitoreo de puestos:** muestra tarjetas con el estado de cada espacio, diferenciando puestos ocupados y disponibles según la información registrada por los sensores.
+- **Historial de parqueo:** presenta la bitácora de accesos y salidas con marcas temporales, códigos de registro y placas detectadas.
 
-* [Versions](#versions)
-* [CoreUI PRO](#coreui-pro)
-* [CoreUI PRO React Admin Templates](#coreui-pro-react-admin-templates)
-* [Data Grid](#data-grid)
-* [Scheduler](#scheduler)
-* [Quick Start](#quick-start)
-* [Installation](#installation)
-* [Basic usage](#basic-usage)
-* [What's included](#whats-included)
-* [AI-Friendly Development](#ai-friendly-development)
-* [Documentation](#documentation)
-* [Components](#components)
-* [Versioning](#versioning)
-* [Creators](#creators)
-* [Community](#community)
-* [Support CoreUI Development](#support-coreui-development)
-* [Copyright and License](#copyright-and-license)
+## Capturas de la aplicación
 
-## Versions
+Las capturas de los módulos pueden incorporarse en `src/assets/images/` cuando estén disponibles:
 
-* [CoreUI Free Bootstrap Admin Template](https://github.com/coreui/coreui-free-bootstrap-admin-template)
-* [CoreUI Free Angular Admin Template](https://github.com/coreui/coreui-free-angular-admin-template)
-* [CoreUI Free React.js Admin Template (Vite)](https://github.com/coreui/coreui-free-react-admin-template)
-* [CoreUI Free React.js Admin Template (Create React App)](https://github.com/coreui/coreui-free-react-admin-template-cra)
-* [CoreUI Free Vue.js Admin Template](https://github.com/coreui/coreui-free-vue-admin-template)
+1. Módulo de vehículos y propietarios.
+2. Monitoreo y gestión de puestos.
+3. Historial de registros.
 
-## CoreUI PRO
+## Tecnologias
 
-* 💪  [CoreUI PRO Angular Admin Template](https://coreui.io/product/angular-dashboard-template/)
-* 💪  [CoreUI PRO Bootstrap Admin Template](https://coreui.io/product/bootstrap-dashboard-template/)
-* 💪  [CoreUI PRO Next.js Admin Template](https://coreui.io/product/next-js-dashboard-template/)
-* 💪  [CoreUI PRO React Admin Template](https://coreui.io/product/react-dashboard-template/)
-* 💪  [CoreUI PRO Vue Admin Template](https://coreui.io/product/vue-dashboard-template/)
+- React 19
+- Vite
+- React Router
+- CoreUI React y Bootstrap 5
+- Supabase para autenticacion y base de datos
+- Sass/SCSS
+- Chart.js
 
-## CoreUI PRO React Admin Templates
+## Requisitos
 
-| Default Theme | Light Theme |
+- Node.js 18 o superior recomendado.
+- npm incluido con Node.js.
+- Un proyecto de Supabase con las tablas y permisos necesarios.
+
+## Instalacion
+
+1. Clona el repositorio y entra en su carpeta:
+
+   ```bash
+   git clone https://github.com/tu-usuario/smart-parking-uteq.git
+   cd smart-parking-uteq
+   ```
+
+2. Instala las dependencias:
+
+   ```bash
+   npm.cmd install
+   ```
+
+3. Crea un archivo `.env.local` en la raiz del proyecto:
+
+   ```env
+   VITE_SUPABASE_URL=https://tu-proyecto.supabase.co
+   VITE_SUPABASE_PUBLISHABLE_KEY=tu-clave-publicable
+   ```
+
+   No subas este archivo al repositorio. La aplicacion detiene su inicializacion si falta alguna de estas variables.
+
+4. Inicia el servidor de desarrollo:
+
+   ```bash
+   npm.cmd start
+   ```
+
+   La aplicación estará disponible en la URL que muestre Vite, normalmente `http://localhost:5173`.
+
+## Base de datos
+
+La capa de acceso a datos utiliza Supabase. Las vistas actuales consultan estas tablas:
+
+| Tabla | Uso |
 | --- | --- |
-| [![CoreUI PRO React Admin Template](https://coreui.io/images/templates/coreui_pro_default_light_dark.webp)](https://coreui.io/product/react-dashboard-template/?theme=default) | [![CoreUI PRO React Admin Template](https://coreui.io/images/templates/coreui_pro_light_light_dark.webp)](https://coreui.io/product/react-dashboard-template/?theme=light)|
+| `puestos` | Puestos de estacionamiento y su estado |
+| `registros_estacionamiento` | Historial de accesos y salidas |
 
-| Modern Theme | Bright Theme |
+La gestion de vehiculos y autenticacion requiere que el esquema de Supabase correspondiente este creado y que las politicas de Row Level Security permitan las operaciones que necesita cada usuario.
+
+## Comandos disponibles
+
+| Comando | Descripcion |
 | --- | --- |
-| [![CoreUI PRO React Admin Template](https://coreui.io/images/templates/coreui_pro_default_v3_light_dark.webp)](https://coreui.io/product/react-dashboard-template/?theme=modern) | [![CoreUI PRO React Admin Template](https://coreui.io/images/templates/coreui_pro_light_v3_light_dark.webp)](https://coreui.io/product/react-dashboard-template/?theme=bright)|
+| `npm start` | Inicia Vite en modo desarrollo con recarga en caliente |
+| `npm run build` | Genera la compilacion de produccion en `dist/` |
+| `npm run serve` | Sirve localmente la compilacion generada |
+| `npm run lint` | Ejecuta ESLint sobre el proyecto |
 
-## Data Grid
+## Estructura del proyecto
 
-CoreUI React Data Grid handles 100,000+ rows with sorting, filtering, virtualization, column pinning, inline editing and CSV export — using the same markup and stylesheet this template already uses.
+```text
+public/                 Archivos estaticos y manifest de la aplicacion
+src/
+  assets/               Logos, iconos e imagenes
+  components/           Header, sidebar, contenido y componentes reutilizables
+  hooks/                Hooks de acceso a datos del parqueadero
+  layout/               Layout principal de la aplicacion
+  lib/supabase.js       Cliente de Supabase
+  scss/                 Estilos globales y personalizaciones
+  views/
+    authentication/     Flujos de autenticacion
+    dashboard/          Panel principal
+    parqueadero/        Vehiculos, puestos e historial
+  App.jsx               Componente raiz
+  _nav.jsx              Configuracion de navegacion lateral
+  index.jsx             Punto de entrada de React
+  routes.js             Rutas de la aplicacion
+  store.js              Estado global de interfaz
+ARCHITECTURE.md         Descripcion de la arquitectura
+DEVELOPMENT.md          Guia de desarrollo
+vite.config.mjs         Configuracion de Vite
+```
+
+## Rutas principales
+
+- `/dashboard`: panel principal.
+- `/vehiculos`: gestion de vehiculos.
+- `/propietarios`: vista asociada a propietarios.
+- `/puestos`: gestion de puestos.
+- `/historial`: historial de registros de estacionamiento.
+
+## Características técnicas
+
+- **Integración con Supabase:** operaciones CRUD asíncronas sobre la base de datos y autenticación mediante el cliente oficial.
+- **Búsqueda dinámica:** filtrado instantáneo de vehículos, puestos e historial desde las vistas correspondientes.
+- **Diseño responsivo:** interfaz construida con componentes CoreUI y Bootstrap.
+- **Validaciones y estados de carga:** confirmación antes de eliminar registros, indicadores de carga y manejo de errores.
+- **Carga diferida:** las vistas se importan con `React.lazy` para reducir la carga inicial de la aplicación.
+
+## Desarrollo
+
+Los cambios de la aplicacion deben realizarse dentro de `src/`. Antes de integrar cambios, ejecuta:
 
 ```bash
-npm install @coreui/react-data-grid
+npm.cmd run lint
+npm.cmd run build
 ```
 
-One license also covers JavaScript, Vue and Angular. It's a separate add-on, not part of CoreUI PRO.
+Consulta [ARCHITECTURE.md](ARCHITECTURE.md) para conocer la organizacion tecnica y [DEVELOPMENT.md](DEVELOPMENT.md) para las convenciones de desarrollo.
 
-- [React Data Grid](https://coreui.io/data-grid/react/?src=readme-free-react)
-- [Documentation](https://coreui.io/data-grid/react/docs/getting-started/introduction/?src=readme-free-react)
+## Despliegue
 
-## Scheduler
+1. Configura `VITE_SUPABASE_URL` y `VITE_SUPABASE_PUBLISHABLE_KEY` en el entorno de despliegue.
+2. Ejecuta `npm.cmd run build`.
+3. Publica el contenido de `dist/` en un servicio compatible con aplicaciones SPA.
+4. Configura el fallback del servidor hacia `index.html` para conservar la navegacion de React Router.
 
-CoreUI React Scheduler ships six views — day, week, month, agenda, resources, and timeline — with drag & drop, RFC 5545 recurrence, and DST-safe time handling, using the same markup and stylesheet this template already uses.
+## Licencia
 
-```bash
-npm install @coreui/react-scheduler
-```
-
-One license also covers JavaScript, Vue and Angular. It's a separate add-on, not part of CoreUI PRO.
-
-- [React Scheduler](https://coreui.io/scheduler/react/?src=readme-free-react)
-- [Documentation](https://coreui.io/scheduler/react/docs/getting-started/introduction/?src=readme-free-react)
-
-## Quick Start
-
-- [Download the latest release](https://github.com/coreui/coreui-free-react-admin-template/archive/refs/heads/main.zip)
-- Clone the repo: `git clone https://github.com/coreui/coreui-free-react-admin-template.git`
-
-### Installation
-
-``` bash
-$ npm install
-```
-
-or
-
-``` bash
-$ yarn install
-```
-
-### Basic usage
-
-``` bash
-# dev server with hot reload at http://localhost:3000
-$ npm start 
-```
-
-or 
-
-``` bash
-# dev server with hot reload at http://localhost:3000
-$ yarn start
-```
-
-Navigate to [http://localhost:3000](http://localhost:3000). The app will automatically reload if you change any of the source files.
-
-#### Build
-
-Run `build` to build the project. The build artifacts will be stored in the `build/` directory.
-
-```bash
-# build for production with minification
-$ npm run build
-```
-
-or
-
-```bash
-# build for production with minification
-$ yarn build
-```
-
-## What's included
-
-Within the download you'll find the following directories and files, logically grouping common assets and providing both compiled and minified variations. You'll see something like this:
-
-```
-coreui-free-react-admin-template
-├── public/          # static files
-│   ├── favicon.ico
-│   └── manifest.json
-│
-├── src/             # project root
-│   ├── assets/      # images, icons, etc.
-│   ├── components/  # common components - header, footer, sidebar, etc.
-│   ├── layouts/     # layout containers
-│   ├── scss/        # scss styles
-│   ├── views/       # application views
-│   ├── _nav.jsx     # sidebar navigation config
-│   ├── App.jsx
-│   ├── index.jsx
-│   ├── routes.js    # routes config
-│   └── store.js     # template state example 
-│
-├── index.html       # html template
-├── ...
-├── package.json
-├── ...
-└── vite.config.mjs  # vite config
-```
-
-## AI-Friendly Development
-
-This template is optimized for AI-assisted development with comprehensive context files and documentation:
-
-### Context Files
-- **`.cursorrules`** - Comprehensive AI context file with project conventions, patterns, and guidelines for working with React, CoreUI, and the template architecture
-- **`ARCHITECTURE.md`** - Detailed technical documentation covering the project structure, component hierarchy, routing system, state management, and build pipeline
-- **`DEVELOPMENT.md`** - Practical developer guide with setup instructions, development workflows, code examples, and best practices
-
-### Code Documentation
-- All React components include detailed JSDoc comments with parameter types and descriptions
-- Inline documentation explaining complex logic and patterns
-- PropTypes definitions for runtime type checking
-
-### Benefits for AI Coding Assistants
-
-When using AI coding assistants like Cursor, Claude Code, or GitHub Copilot, these context files help the AI to:
-
-- **Understand the Stack**: Recognize that this is a React 19 application using CoreUI React components (not Tailwind CSS or other frameworks)
-- **Follow Patterns**: Generate code that matches the project's component structure and conventions
-- **Use Correct Components**: Suggest appropriate CoreUI React components from `@coreui/react`
-- **Maintain Code Style**: Follow ESLint and Prettier rules automatically
-- **Respect Architecture**: Work within the established routing, state management, and styling patterns
-
-Simply open the project in your AI-enabled IDE, and the assistant will automatically have context about the React architecture, CoreUI React component usage, development workflows, and coding standards.
-
-## Documentation
-
-The documentation for the CoreUI Admin Template is hosted at our website [CoreUI for React](https://coreui.io/react/docs/templates/installation/)
-
-## Components
-
-CoreUI React.js Admin Templates are built on top of CoreUI and CoreUI PRO UI components libraries, including all of these components.
-
-- [React Accordion](https://coreui.io/react/docs/components/accordion/)
-- [React Alert](https://coreui.io/react/docs/components/alert/)
-- [React Autocomplete](https://coreui.io/react/docs/forms/autocomplete/) **PRO**
-- [React Avatar](https://coreui.io/react/docs/components/avatar/)
-- [React Badge](https://coreui.io/react/docs/components/badge/)
-- [React Breadcrumb](https://coreui.io/react/docs/components/breadcrumb/)
-- [React Button](https://coreui.io/react/docs/components/button/)
-- [React Button Group](https://coreui.io/react/docs/components/button-group/)
-- [React Callout](https://coreui.io/react/docs/components/callout/)
-- [React Card](https://coreui.io/react/docs/components/card/)
-- [React Carousel](https://coreui.io/react/docs/components/carousel/)
-- [React Checkbox](https://coreui.io/react/docs/forms/checkbox/)
-- [React Close Button](https://coreui.io/react/docs/components/close-button/)
-- [React Collapse](https://coreui.io/react/docs/components/collapse/)
-- [React Date Picker](https://coreui.io/react/docs/forms/date-picker/) **PRO**
-- [React Date Range Picker](https://coreui.io/react/docs/forms/date-range-picker/) **PRO**
-- [React Dropdown](https://coreui.io/react/docs/components/dropdown/)
-- [React Floating Labels](https://coreui.io/react/docs/forms/floating-labels/)
-- [React Footer](https://coreui.io/react/docs/components/footer/)
-- [React Header](https://coreui.io/react/docs/components/header/)
-- [React Image](https://coreui.io/react/docs/components/image/)
-- [React Input](https://coreui.io/react/docs/forms/input/)
-- [React Input Group](https://coreui.io/react/docs/forms/input-group/)
-- [React List Group](https://coreui.io/react/docs/components/list-group/)
-- [React Loading Button](https://coreui.io/react/docs/components/loading-button/) **PRO**
-- [React Modal](https://coreui.io/react/docs/components/modal/)
-- [React Multi Select](https://coreui.io/react/docs/forms/multi-select/) **PRO**
-- [React Navs & Tabs](https://coreui.io/react/docs/components/navs-tabs/)
-- [React Navbar](https://coreui.io/react/docs/components/navbar/)
-- [React Offcanvas](https://coreui.io/react/docs/components/offcanvas/)
-- [React One Time Password Input](https://coreui.io/react/docs/forms/one-time-password-input/) **PRO**
-- [React Pagination](https://coreui.io/react/docs/components/pagination/)
-- [React Password Input](https://coreui.io/react/docs/forms/password-input/) **PRO**
-- [React Placeholder](https://coreui.io/react/docs/components/placeholder/)
-- [React Popover](https://coreui.io/react/docs/components/popover/)
-- [React Progress](https://coreui.io/react/docs/components/progress/)
-- [React Radio](https://coreui.io/react/docs/forms/radio/)
-- [React Range](https://coreui.io/react/docs/forms/range/)
-- [React Range Slider](https://coreui.io/react/docs/forms/range-slider/) **PRO**
-- [React Rating](https://coreui.io/react/docs/forms/rating/)
-- [React Select](https://coreui.io/react/docs/forms/select/)
-- [React Sidebar](https://coreui.io/react/docs/components/sidebar/)
-- [React Smart Pagination](https://coreui.io/react/docs/components/smart-pagination/) **PRO**
-- [React Smart Table](https://coreui.io/react/docs/components/smart-table/) **PRO**
-- [React Spinner](https://coreui.io/react/docs/components/spinner/)
-- [React Stepper](https://coreui.io/react/docs/forms/stepper/) **PRO**
-- [React Switch](https://coreui.io/react/docs/forms/switch/)
-- [React Table](https://coreui.io/react/docs/components/table/)
-- [React Textarea](https://coreui.io/react/docs/forms/textarea/)
-- [React Time Picker](https://coreui.io/react/docs/forms/time-picker/) **PRO**
-- [React Toast](https://coreui.io/react/docs/components/toast/)
-- [React Tooltip](https://coreui.io/react/docs/components/tooltip/)
-
-## Versioning
-
-For transparency into our release cycle and in striving to maintain backward compatibility, CoreUI Free Admin Template is maintained under [the Semantic Versioning guidelines](http://semver.org/).
-
-See [the Releases section of our project](https://github.com/coreui/coreui-free-react-admin-template/releases) for changelogs for each release version.
-
-## Creators
-
-**Łukasz Holeczek**
-
-* <https://twitter.com/lukaszholeczek>
-* <https://github.com/mrholek>
-
-**Andrzej Kopański**
-
-* <https://github.com/xidedix>
-
-**CoreUI Team**
-
-* <https://twitter.com/core_ui>
-* <https://github.com/coreui>
-* <https://github.com/orgs/coreui/people>
-
-## Community
-
-Get updates on CoreUI's development and chat with the project maintainers and community members.
-
-- Follow [@core_ui on Twitter](https://twitter.com/core_ui).
-- Read and subscribe to [CoreUI Blog](https://coreui.ui/blog/).
-
-## Support CoreUI Development
-
-CoreUI is an MIT-licensed open source project and is completely free to use. However, the amount of effort needed to maintain and develop new features for the project is not sustainable without proper financial backing. You can support development by buying the [CoreUI PRO](https://coreui.io/pricing/?framework=react&src=github-coreui-free-react-admin-template) or by becoming a sponsor via [Open Collective](https://opencollective.com/coreui/).
-
-## Copyright and License
-
-copyright 2026 creativeLabs Łukasz Holeczek.   
-
-Code released under [the MIT license](https://github.com/coreui/coreui-free-react-admin-template/blob/main/LICENSE).
+Este proyecto se distribuye bajo la licencia MIT. Consulta [LICENSE](LICENSE) para mas informacion.
