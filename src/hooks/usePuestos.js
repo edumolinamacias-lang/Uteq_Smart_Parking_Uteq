@@ -8,10 +8,9 @@ export const usePuestos = () => {
   const fetchPuestos = useCallback(async () => {
     setLoading(true)
     try {
-      // Ajustado para consultar el estado de los 80 sensores de distancia
-      const { data, error } = await supabase.from('puestos').select('*').order('numero_puesto')
+      const { data, error } = await supabase.from('puestos').select('*')
       if (error) throw error
-      return data
+      return data || []
     } catch (err) {
       setError(err.message)
       return []
@@ -20,16 +19,5 @@ export const usePuestos = () => {
     }
   }, [])
 
-  const updateEstadoPuesto = async (id, estado) => {
-    try {
-      const { error } = await supabase.from('puestos').update({ estado }).eq('id', id)
-      if (error) throw error
-      return true
-    } catch (err) {
-      setError(err.message)
-      return false
-    }
-  }
-
-  return { fetchPuestos, updateEstadoPuesto, loading, error }
+  return { fetchPuestos, loading, error }
 }

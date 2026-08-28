@@ -8,9 +8,9 @@ export const useHistorial = () => {
   const fetchHistorial = useCallback(async () => {
     setLoading(true)
     try {
-      const { data, error } = await supabase.from('historial').select('*').order('fecha_ingreso', { ascending: false })
+      const { data, error } = await supabase.from('registros_estacionamiento').select('*')
       if (error) throw error
-      return data
+      return data || []
     } catch (err) {
       setError(err.message)
       return []
@@ -19,16 +19,5 @@ export const useHistorial = () => {
     }
   }, [])
 
-  const registrarSalida = async (id, fechaSalida) => {
-    try {
-      const { error } = await supabase.from('historial').update({ fecha_salida: fechaSalida }).eq('id', id)
-      if (error) throw error
-      return true
-    } catch (err) {
-      setError(err.message)
-      return false
-    }
-  }
-
-  return { fetchHistorial, registrarSalida, loading, error }
+  return { fetchHistorial, loading, error }
 }
