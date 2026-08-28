@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { CCard, CCardBody, CCol, CRow, CWidgetStatsF } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import { cilCarAlt, cilGrid, cilHistory, cilCheckCircle, cilBan, cilPeople } from '@coreui/icons'
+import { cilCarAlt, cilGrid, cilHistory, cilCheckCircle, cilBan } from '@coreui/icons'
 
 export default function Dashboard() {
   const [totalVehiculos, setTotalVehiculos] = useState(0)
@@ -12,37 +12,56 @@ export default function Dashboard() {
   const [puestosDisponibles, setPuestosDisponibles] = useState(0)
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    const cargarResumen = async () => {
-      setLoading(true)
+  const cargarResumen = async () => {
+    // 1. Contar vehículos registrados
+    const { count: countVehiculos } = await supabase
+      .from('vehiculos')
+      .select('*', { count: 'exact', head: true })
+
+    // 2. Consultar puestos para calcular estadísticas en tiempo real
+    const { data: dataPuestos } = await supabase
+      .from('puestos')
+      .select('estado')
+
+    if (dataPuestos) {
+      const ocupados = dataPuestos.filter(p => p.estado?.toUpperCase() === 'OCUPADO').length
+      const disponibles = dataPuestos.length - ocupados
       
-      // Contar vehículos registrados
-      const { count: countVehiculos } = await supabase
-        .from('vehiculos')
-        .select('*', { count: 'exact', head: true })
-
-      // Consultar puestos para calcular estadísticas en tiempo real
-      const { data: dataPuestos } = await supabase
-        .from('puestos')
-        .select('estado')
-
-      if (dataPuestos) {
-        const ocupados = dataPuestos.filter(p => p.estado?.toUpperCase() === 'OCUPADO').length
-        const disponibles = dataPuestos.length - ocupados
-        
-        setTotalPuestos(dataPuestos.length)
-        setPuestosOcupados(ocupados)
-        setPuestosDisponibles(disponibles)
-      }
-
-      if (countVehiculos !== null) {
-        setTotalVehiculos(countVehiculos)
-      }
-
-      setLoading(false)
+      setTotalPuestos(dataPuestos.length)
+      setPuestosOcupados(ocupados)
+      setPuestosDisponibles(disponibles)
     }
 
+    if (countVehiculos !== null) {
+      setTotalVehiculos(countVehiculos)
+    }
+
+    setLoading(false)
+  }
+
+  useEffect(() => {
     cargarResumen()
+
+    // Opcional: Actualizar los datos automáticamente cada 10 segundos para reflejar cambios de sensores en vivo
+    const intervalo = setInterval(() => {
+      cargarResumen()
+    }, 10000)
+
+    // Configurar suscripción en tiempo real de Supabase para 'puestos' y 'vehiculos'
+    const subscription = supabase
+      .channel('dashboard-realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'puestos' }, () => {
+        cargarResumen()
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'vehiculos' }, () => {
+        cargarResumen()
+      })
+      .subscribe()
+
+    return () => {
+      clearInterval(intervalo)
+      supabase.removeChannel(subscription)
+    }
   }, [])
 
   return (
