@@ -271,6 +271,18 @@ Formulario para editar los datos de un vehículo existente, mostrando la informa
 
 Mensaje de confirmación al actualizar exitosamente los datos de un vehículo.
 
+#### Confirmación de eliminación
+
+![Confirmación de eliminación](./screenshots/eliminacion_registro.png)
+
+Mensaje de confirmación antes de eliminar un registro.
+
+#### Lista después de la eliminación
+
+![Lista después de eliminar](./screenshots/comprobacion_eliminacion_registro.png)
+
+Listado actualizado después de eliminar el registro.
+
 ## Comandos disponibles
 
 | Comando | Descripcion |
