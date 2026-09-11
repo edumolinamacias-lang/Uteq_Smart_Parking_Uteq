@@ -1,4 +1,4 @@
-**
+/**
  * Application Routes Configuration
  *
  * Defines all protected routes in the application using React lazy loading
