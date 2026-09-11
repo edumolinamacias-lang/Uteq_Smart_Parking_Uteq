@@ -5,6 +5,7 @@ import {
   cilCarAlt,
   cilGrid,
   cilHistory,
+  cilCamera,
 } from '@coreui/icons'
 import { CNavItem, CNavTitle } from '@coreui/react'
 
@@ -36,6 +37,12 @@ const _nav = [
     name: 'Historial de Parqueo',
     to: '/historial',
     icon: <CIcon icon={cilHistory} customClassName="nav-icon" />,
+  },
+  {
+    component: CNavItem,
+    name: 'Monitoreo de entrada',
+    to: '/parqueadero/monitoreo-entrada',
+    icon: <CIcon icon={cilCamera} customClassName="nav-icon" />,
   },
 ]
 
