@@ -47,6 +47,7 @@ const Tooltips = React.lazy(() => import('./views/components/tooltips/Tooltips')
 const Vehiculos = React.lazy(() => import('./views/parqueadero/Vehiculos'))
 const Puestos = React.lazy(() => import('./views/parqueadero/Puestos'))
 const HistorialAcceso = React.lazy(() => import('./views/parqueadero/HistorialAcceso'))
+const MonitoreoEntrada = React.lazy(() => import('./views/parqueadero/MonitoreoEntrada'))
 //Forms
 const ChecksRadios = React.lazy(() => import('./views/forms/checks-radios/ChecksRadios'))
 const ChipInput = React.lazy(() => import('./views/forms/chip-input/ChipInput'))
@@ -88,6 +89,17 @@ export const routes = [
   { path: '/', exact: true, name: 'Home' },
   { path: '/dashboard', name: 'Dashboard', element: Dashboard },
   { path: '/vehiculos', name: 'Vehículos', element: Vehiculos },
+  { path: '/propietarios', name: 'Propietarios', element: Vehiculos },
+  { path: '/puestos', name: 'Puestos', element: Puestos },
+  { path: '/historial', name: 'Historial de Registros', element: HistorialAcceso },
+  {
+    path: '/parqueadero/monitoreo-entrada',
+    name: 'Monitoreo de entrada',
+    element: MonitoreoEntrada,
+  },
+]
+export default routes
+
   { path: '/propietarios', name: 'Propietarios', element: Vehiculos },
   { path: '/puestos', name: 'Puestos', element: Puestos },
   { path: '/historial', name: 'Historial de Registros', element: HistorialAcceso },
