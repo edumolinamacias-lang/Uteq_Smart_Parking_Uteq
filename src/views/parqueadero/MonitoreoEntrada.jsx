@@ -27,12 +27,19 @@ const MonitoreoEntrada = () => {
   const [selectedFile, setSelectedFile] = useState(null)
   const [previewUrl, setPreviewUrl] = useState(null)
   const [loading, setLoading] = useState(false)
+  const [cameraLoading, setCameraLoading] = useState(false)
   const [error, setError] = useState(null)
   const [resultado, setResultado] = useState(null)
   const [isMirrored, setIsMirrored] = useState(false)
 
   const videoRef = useRef(null)
   const canvasRef = useRef(null)
+  const streamRef = useRef(null)
+  const isMountedRef = useRef(true)
+
+  useEffect(() => {
+    streamRef.current = stream
+  }, [stream])
 
   useEffect(() => {
     if (stream && videoRef.current) {
@@ -46,24 +53,45 @@ const MonitoreoEntrada = () => {
   }, [stream])
 
   useEffect(() => {
+    isMountedRef.current = true
     return () => {
-      stopCamera()
+      isMountedRef.current = false
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => track.stop())
+        streamRef.current = null
+      }
     }
   }, [])
 
   const startCamera = async () => {
+    if (cameraLoading || stream) return
+
     setError(null)
     setCapturedImage(null)
     setPreviewUrl(null)
+    setCameraLoading(true)
+
     try {
       const mediaStream = await navigator.mediaDevices.getUserMedia({
-        video: true,
+        video: { width: { ideal: 1280 }, height: { ideal: 720 } },
         audio: false,
       })
+
+      if (!isMountedRef.current) {
+        mediaStream.getTracks().forEach((track) => track.stop())
+        return
+      }
+
       setStream(mediaStream)
     } catch (err) {
       console.error('Error de cámara:', err)
-      setError('No se pudo acceder a la cámara o iVCam. Verifique permisos y conexiones.')
+      if (isMountedRef.current) {
+        setError('No se pudo acceder a la cámara o iVCam. Verifique permisos y conexiones.')
+      }
+    } finally {
+      if (isMountedRef.current) {
+        setCameraLoading(false)
+      }
     }
   }
 
@@ -77,9 +105,29 @@ const MonitoreoEntrada = () => {
   const capturePhoto = () => {
     if (!videoRef.current || !canvasRef.current) return
     const video = videoRef.current
+
+    let width = video.videoWidth || video.clientWidth || 640
+    let height = video.videoHeight || video.clientHeight || 480
+
+    if (width === 0 || height === 0) {
+      setError('La cámara aún no está lista. Espere un segundo e intente de nuevo.')
+      return
+    }
+
+    const MAX_DIMENSION = 1280
+    if (width > MAX_DIMENSION || height > MAX_DIMENSION) {
+      if (width > height) {
+        height = Math.round((height * MAX_DIMENSION) / width)
+        width = MAX_DIMENSION
+      } else {
+        width = Math.round((width * MAX_DIMENSION) / height)
+        height = MAX_DIMENSION
+      }
+    }
+
     const canvas = canvasRef.current
-    canvas.width = video.videoWidth || 640
-    canvas.height = video.videoHeight || 480
+    canvas.width = width
+    canvas.height = height
     const ctx = canvas.getContext('2d')
 
     if (isMirrored) {
@@ -87,16 +135,28 @@ const MonitoreoEntrada = () => {
       ctx.scale(-1, 1)
     }
 
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
+    try {
+      ctx.drawImage(video, 0, 0, width, height)
+    } catch (err) {
+      console.error('Error al dibujar en el canvas:', err)
+      setError('No se pudo extraer la imagen del flujo de video.')
+      return
+    }
 
     canvas.toBlob((blob) => {
-      if (blob) {
+      if (blob && blob.size > 0) {
+        if (previewUrl) {
+          URL.revokeObjectURL(previewUrl)
+        }
         setCapturedImage(blob)
         setSelectedFile(null)
         setPreviewUrl(URL.createObjectURL(blob))
+        setError(null)
         stopCamera()
+      } else {
+        setError('Error al generar la vista previa de la foto.')
       }
-    }, 'image/jpeg')
+    }, 'image/jpeg', 0.80)
   }
 
   const handleFileChange = (e) => {
@@ -167,7 +227,6 @@ const MonitoreoEntrada = () => {
     setError(null)
   }
 
-  // Funciones de parseo blindadas contra objetos anidados
   const parseText = (val) => {
     if (val === null || val === undefined) return 'No disponible'
     if (typeof val === 'object') {
@@ -260,7 +319,7 @@ const MonitoreoEntrada = () => {
                   style={{
                     width: '100%',
                     height: '100%',
-                    objectFit: 'cover',
+                    objectFit: 'contain',
                     transform: isMirrored ? 'scaleX(-1)' : 'scaleX(1)',
                     display: stream ? 'block' : 'none',
                   }}
@@ -270,7 +329,9 @@ const MonitoreoEntrada = () => {
                   previewUrl ? (
                     <CImage src={previewUrl} alt="Vista previa" fluid style={{ maxHeight: '240px', objectFit: 'contain', position: 'absolute' }} />
                   ) : (
-                    <span className="text-white position-absolute">La cámara está detenida</span>
+                    <span className="text-white position-absolute">
+                      {cameraLoading ? 'Iniciando cámara...' : 'La cámara está detenida'}
+                    </span>
                   )
                 )}
                 <canvas ref={canvasRef} style={{ display: 'none' }} />
@@ -278,8 +339,13 @@ const MonitoreoEntrada = () => {
 
               <div className="d-flex flex-wrap gap-2 mb-3">
                 {!stream ? (
-                  <CButton color="primary" onClick={startCamera} disabled={loading}>
-                    <CIcon icon={cilVideo} className="me-2" /> Iniciar cámara (iVCam / Externa)
+                  <CButton color="primary" onClick={startCamera} disabled={loading || cameraLoading}>
+                    {cameraLoading ? (
+                      <CSpinner size="sm" className="me-2" />
+                    ) : (
+                      <CIcon icon={cilVideo} className="me-2" />
+                    )}
+                    {cameraLoading ? 'Iniciando cámara...' : 'Iniciar cámara (iVCam / Externa)'}
                   </CButton>
                 ) : (
                   <>
