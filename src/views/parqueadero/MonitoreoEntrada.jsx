@@ -192,20 +192,27 @@ const MonitoreoEntrada = () => {
     setResultado(null)
 
     try {
+      const base64Data = await new Promise((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onloadend = () => resolve(reader.result)
+        reader.onerror = reject
+        reader.readAsDataURL(archivoAEnviar)
+      })
+
       const response = await fetch(import.meta.env.VITE_OCR_ENDPOINT, {
         method: 'POST',
         headers: {
-          'Content-Type': archivoAEnviar.type || 'application/octet-stream',
+          'Content-Type': 'application/json',
         },
-        body: archivoAEnviar,
+        body: JSON.stringify({ image: base64Data }),
       })
 
       if (!response.ok) {
         if (response.status === 400) throw new Error('Imagen vacía, inválida o con dimensiones no permitidas (400).')
-        if (response.status === 413) throw new Error('La imagen es superior a 4 MiB (413).')
+        if (response.status === 413) throw new Error('La imagen es superior al límite permitido (413).')
         if (response.status === 415) throw new Error('Formato de imagen no admitido (415).')
-        if (response.status === 502) throw new Error('Fallo temporal del servicio OCR o de Supabase (502).')
-        if (response.status === 504) throw new Error('Tiempo de espera agotado (504).')
+        if (response.status === 502) throw new Error('El servidor backend o la función de Supabase colapsó (502).')
+        if (response.status === 504) throw new Error('Tiempo de espera agotado en el servidor (504).')
         throw new Error(`Error del servicio (HTTP ${response.status}).`)
       }
 
