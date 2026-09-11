@@ -1,4 +1,4 @@
-/**
+**
  * Application Routes Configuration
  *
  * Defines all protected routes in the application using React lazy loading
@@ -12,12 +12,12 @@
  *
  * @module routes
  */
-
+ 
 import React from 'react'
-
+ 
 // Dashboard
 const Dashboard = React.lazy(() => import('./views/dashboard/Dashboard'))
-
+ 
 // Components
 const Accordion = React.lazy(() => import('./views/components/accordion/Accordion'))
 const Alerts = React.lazy(() => import('./views/components/alerts/Alerts'))
@@ -58,16 +58,16 @@ const Layout = React.lazy(() => import('./views/forms/layout/Layout'))
 const Range = React.lazy(() => import('./views/forms/range/Range'))
 const Select = React.lazy(() => import('./views/forms/select/Select'))
 const Validation = React.lazy(() => import('./views/forms/validation/Validation'))
-
+ 
 const Charts = React.lazy(() => import('./views/charts/Charts'))
-
+ 
 // Icons
 const CoreUIIcons = React.lazy(() => import('./views/icons/coreui-icons/CoreUIIcons'))
 const Flags = React.lazy(() => import('./views/icons/flags/Flags'))
 const Brands = React.lazy(() => import('./views/icons/brands/Brands'))
-
+ 
 const Widgets = React.lazy(() => import('./views/widgets/Widgets'))
-
+ 
 /**
  * Array of route configuration objects
  *
@@ -99,9 +99,4 @@ export const routes = [
   },
 ]
 export default routes
-
-  { path: '/propietarios', name: 'Propietarios', element: Vehiculos },
-  { path: '/puestos', name: 'Puestos', element: Puestos },
-  { path: '/historial', name: 'Historial de Registros', element: HistorialAcceso },
-]
-export default routes
+ 
