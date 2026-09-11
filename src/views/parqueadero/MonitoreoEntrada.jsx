@@ -1,108 +1,538 @@
-import React, { useState } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import {
+  CRow,
+  CCol,
+  CCard,
+  CCardHeader,
+  CCardBody,
+  CButton,
+  CFormInput,
+  CFormLabel,
+  CSpinner,
+  CAlert,
+  CImage,
+  CTable,
+  CTableBody,
+  CTableRow,
+  CTableDataCell,
+} from '@coreui/react'
+import CIcon from '@coreui/icons-react'
+import { cilCamera, cilVideo, cilCheckCircle, cilWarning, cilXCircle, cilHome, cilSwapHorizontal } from '@coreui/icons'
 
-export default function MonitoreoEntrada() {
+const MonitoreoEntrada = () => {
+  const navigate = useNavigate()
+  const [stream, setStream] = useState(null)
+  const [capturedImage, setCapturedImage] = useState(null)
+  const [selectedFile, setSelectedFile] = useState(null)
+  const [previewUrl, setPreviewUrl] = useState(null)
   const [loading, setLoading] = useState(false)
-  const [resultadoOCR, setResultadoOCR] = useState(null)
+  const [cameraLoading, setCameraLoading] = useState(false)
   const [error, setError] = useState(null)
+  const [resultado, setResultado] = useState(null)
+  const [isMirrored, setIsMirrored] = useState(false)
+  const [videoReady, setVideoReady] = useState(false)
 
-  const handleArchivoSeleccionado = async (e) => {
-    const archivo = e.target.files[0]
-    if (!archivo) return
+  const videoRef = useRef(null)
+  const canvasRef = useRef(null)
+
+  // Referencias "vivas" para evitar closures obsoletos en la limpieza al desmontar
+  const streamRef = useRef(null)
+  const isMountedRef = useRef(true)
+
+  useEffect(() => {
+    streamRef.current = stream
+  }, [stream])
+
+  useEffect(() => {
+    if (stream && videoRef.current) {
+      setVideoReady(false)
+      videoRef.current.srcObject = stream
+      videoRef.current.play().catch((e) => {
+        if (e.name !== 'AbortError') {
+          console.error('Error al reproducir video:', e)
+        }
+      })
+    } else {
+      setVideoReady(false)
+    }
+  }, [stream])
+
+  const handleVideoReady = () => {
+    // Pequeña espera adicional para que la cámara termine de ajustar exposición/enfoque
+    setTimeout(() => {
+      if (isMountedRef.current) setVideoReady(true)
+    }, 800)
+  }
+
+  // Libera la cámara de forma confiable al desmontar el componente (cambio de vista)
+  useEffect(() => {
+    isMountedRef.current = true
+    return () => {
+      isMountedRef.current = false
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => track.stop())
+        streamRef.current = null
+      }
+    }
+  }, [])
+
+  const startCamera = async () => {
+    if (cameraLoading || stream) return // evita doble inicio si se hace doble clic
+
+    setError(null)
+    setCapturedImage(null)
+    setPreviewUrl(null)
+    setCameraLoading(true)
+
+    try {
+      const mediaStream = await navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: false,
+      })
+
+      if (!isMountedRef.current) {
+        // El componente se desmontó mientras se esperaba el permiso de cámara
+        mediaStream.getTracks().forEach((track) => track.stop())
+        return
+      }
+
+      setStream(mediaStream)
+    } catch (err) {
+      console.error('Error de cámara:', err)
+      if (isMountedRef.current) {
+        setError('No se pudo acceder a la cámara o iVCam. Verifique permisos y conexiones.')
+      }
+    } finally {
+      if (isMountedRef.current) {
+        setCameraLoading(false)
+      }
+    }
+  }
+
+  const stopCamera = () => {
+    if (stream) {
+      stream.getTracks().forEach((track) => track.stop())
+      setStream(null)
+    }
+  }
+
+  const capturePhoto = () => {
+    if (!videoRef.current || !canvasRef.current) return
+    const video = videoRef.current
+    const canvas = canvasRef.current
+
+    try {
+      canvas.width = video.videoWidth || 640
+      canvas.height = video.videoHeight || 480
+      const ctx = canvas.getContext('2d')
+
+      ctx.save()
+      if (isMirrored) {
+        ctx.translate(canvas.width, 0)
+        ctx.scale(-1, 1)
+      }
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
+      ctx.restore()
+
+      canvas.toBlob(
+        (blob) => {
+          if (blob) {
+            setCapturedImage(blob)
+            setSelectedFile(null)
+            setPreviewUrl(URL.createObjectURL(blob))
+            stopCamera()
+          } else {
+            setError('No se pudo generar la fotografía a partir del video. Intente capturar nuevamente.')
+          }
+        },
+        'image/jpeg',
+        0.95
+      )
+    } catch (err) {
+      console.error('Error al capturar foto:', err)
+      setError('Ocurrió un error al capturar la fotografía. Intente nuevamente.')
+    }
+  }
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+
+    if (!['image/jpeg', 'image/png'].includes(file.type)) {
+      setError('Formato no admitido. Utilice únicamente imágenes JPG o PNG.')
+      return
+    }
+
+    if (file.size > 4 * 1024 * 1024) {
+      setError('La imagen supera el tamaño máximo permitido de 4 MiB (Error 413).')
+      return
+    }
+
+    stopCamera()
+    setError(null)
+    setSelectedFile(file)
+    setCapturedImage(null)
+    setPreviewUrl(URL.createObjectURL(file))
+  }
+
+  const detectarPlaca = async () => {
+    const archivoAEnviar = capturedImage || selectedFile
+    if (!archivoAEnviar) {
+      setError('Debe capturar una fotografía o seleccionar un archivo antes de detectar.')
+      return
+    }
 
     setLoading(true)
     setError(null)
-    setResultadoOCR(null)
+    setResultado(null)
 
     try {
-      const resultado = await enviarImagenOCR(archivo)
-      setResultadoOCR(resultado)
+      const response = await fetch(import.meta.env.VITE_OCR_ENDPOINT, {
+        method: 'POST',
+        headers: {
+          'Content-Type': archivoAEnviar.type || 'application/octet-stream',
+        },
+        body: archivoAEnviar,
+      })
+
+      if (!response.ok) {
+        if (response.status === 400) throw new Error('Imagen vacía, inválida o con dimensiones no permitidas (400).')
+        if (response.status === 413) throw new Error('La imagen es superior a 4 MiB (413).')
+        if (response.status === 415) throw new Error('Formato de imagen no admitido (415).')
+        if (response.status === 502) throw new Error('Fallo temporal del servicio OCR o de Supabase (502).')
+        if (response.status === 504) throw new Error('Tiempo de espera agotado (504).')
+        throw new Error(`Error del servicio (HTTP ${response.status}).`)
+      }
+
+      const data = await response.json()
+      setResultado(data)
     } catch (err) {
-      setError(err.message)
+      setError(err.message || 'Ocurrió un error al procesar la solicitud.')
     } finally {
       setLoading(false)
     }
   }
 
-  async function enviarImagenOCR(archivo) {
-    let blobAEnviar = archivo
-    let contentType = archivo.type
-
-    // Normaliza formatos no admitidos (como WebP) convirtiéndolos a JPEG vía Canvas
-    if (!['image/jpeg', 'image/png', 'application/octet-stream'].includes(archivo.type)) {
-      blobAEnviar = await convertirAJpeg(archivo)
-      contentType = 'image/jpeg'
-    }
-
-    const response = await fetch(import.meta.env.VITE_OCR_ENDPOINT, {
-      method: 'POST',
-      headers: {
-        'Content-Type': contentType || 'application/octet-stream',
-      },
-      body: blobAEnviar,
-    })
-
-    if (!response.ok) {
-      throw new Error(`Error en el servidor: ${response.status} (${response.statusText})`)
-    }
-
-    return await response.json()
+  const reiniciarProceso = () => {
+    stopCamera()
+    setCapturedImage(null)
+    setSelectedFile(null)
+    setPreviewUrl(null)
+    setResultado(null)
+    setError(null)
   }
 
-  function convertirAJpeg(file) {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader()
-      reader.onload = (e) => {
-        const img = new Image()
-        img.onload = () => {
-          const canvas = document.createElement('canvas')
-          canvas.width = img.width
-          canvas.height = img.height
-          const ctx = canvas.getContext('2d')
-          ctx.drawImage(img, 0, 0)
-          canvas.toBlob(
-            (blob) => {
-              if (blob) resolve(blob)
-              else reject(new Error('Fallo al convertir la imagen a Blob'))
-            },
-            'image/jpeg',
-            0.9
-          )
-        }
-        img.onerror = reject
-        img.src = e.target.result
+  // Funciones de parseo blindadas contra objetos anidados
+  const parseText = (val) => {
+    if (val === null || val === undefined) return 'No disponible'
+    if (typeof val === 'object') {
+      const resolved = val.nombre || val.cedula || val.text || val.value || val.label || val.placa || val.marca || val.modelo
+      if (resolved && typeof resolved !== 'object') return String(resolved)
+      try {
+        return JSON.stringify(val)
+      } catch {
+        return 'No disponible'
       }
-      reader.onerror = reject
-      reader.readAsDataURL(file)
-    })
+    }
+    return String(val)
   }
+
+  const getSafeUrl = (val) => {
+    if (!val) return ''
+    if (typeof val === 'string') return val
+    if (typeof val === 'object') {
+      return val.url || val.secure_url || val.link || val.src || ''
+    }
+    return String(val)
+  }
+
+  const formatConfianza = (val) => {
+    if (val === null || val === undefined) return 'No disponible'
+    if (typeof val === 'object') {
+      val = val.confianza || val.value || val.score || 0
+    }
+    const num = Number(val)
+    if (!isNaN(num)) {
+      if (num <= 1) {
+        return `${(num * 100).toFixed(1).replace(/\.0$/, '')}%`
+      }
+      return `${num}%`
+    }
+    return parseText(val)
+  }
+
+  const imagenMarcada = resultado?.imagen_marcada?.base64
+    ? `data:${resultado.imagen_marcada.mime_type || 'image/jpeg'};base64,${resultado.imagen_marcada.base64}`
+    : null
+
+  const propietarioNombre = parseText(
+    resultado?.propietario_nombre ||
+    resultado?.vehiculo?.propietario_nombre ||
+    resultado?.propietario?.nombre
+  )
+
+  const propietarioCedula = parseText(
+    resultado?.cedula_propietario ||
+    resultado?.vehiculo?.cedula_propietario ||
+    resultado?.cedula_enmascarada ||
+    resultado?.vehiculo?.cedula_enmascarada ||
+    resultado?.propietario?.cedula
+  )
+
+  const propietarioFoto = getSafeUrl(
+    resultado?.foto_propietario_url ||
+    resultado?.vehiculo?.foto_propietario_url ||
+    resultado?.propietario?.foto ||
+    ''
+  )
 
   return (
-    <div className="p-6 bg-slate-900 text-white min-h-screen">
-      <h1 className="text-xl font-bold mb-4">Monitoreo de entrada</h1>
-
-      <div className="mb-4">
-        <label className="block mb-2 text-sm text-slate-300">
-          O seleccionar imagen (JPG / PNG)
-        </label>
-        <input
-          type="file"
-          accept="image/*"
-          onChange={handleArchivoSeleccionado}
-          className="block w-full text-sm text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-violet-600 file:text-white hover:file:bg-violet-700 cursor-pointer"
-        />
+    <>
+      <div className="mb-3">
+        <CButton color="secondary" variant="outline" onClick={() => navigate('/dashboard')} disabled={loading}>
+          <CIcon icon={cilHome} className="me-2" /> Volver al Menú Principal
+        </CButton>
       </div>
 
-      {loading && <p className="text-yellow-400 animate-pulse">Procesando imagen y enviando OCR...</p>}
-      {error && <p className="text-red-400 bg-red-950/50 p-3 rounded border border-red-800">Error: {error}</p>}
+      <CRow>
+        <CCol md={6}>
+          <CCard className="mb-4">
+            <CCardHeader>
+              <strong>Captura del Vehículo</strong>
+            </CCardHeader>
+            <CCardBody>
+              {error && <CAlert color="danger">{error}</CAlert>}
 
-      {resultadoOCR && (
-        <div className="mt-4 p-4 bg-slate-800 rounded border border-slate-700">
-          <h3 className="font-semibold mb-2 text-emerald-400">Resultado OCR Exitoso:</h3>
-          <pre className="text-xs bg-slate-950 p-3 rounded overflow-x-auto text-slate-200">
-            {JSON.stringify(resultadoOCR, null, 2)}
-          </pre>
-        </div>
-      )}
-    </div>
+              <div
+                className="mb-3 text-center bg-dark rounded p-2 position-relative"
+                style={{ height: '260px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}
+              >
+                <video
+                  ref={videoRef}
+                  autoPlay
+                  playsInline
+                  muted
+                  onLoadedData={handleVideoReady}
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                    transform: isMirrored ? 'scaleX(-1)' : 'scaleX(1)',
+                    display: stream ? 'block' : 'none',
+                  }}
+                />
+
+                {!stream && (
+                  previewUrl ? (
+                    <CImage src={previewUrl} alt="Vista previa" fluid style={{ maxHeight: '240px', objectFit: 'contain', position: 'absolute' }} />
+                  ) : (
+                    <span className="text-white position-absolute">
+                      {cameraLoading ? 'Iniciando cámara...' : 'La cámara está detenida'}
+                    </span>
+                  )
+                )}
+                {stream && !videoReady && (
+                  <span className="text-white position-absolute" style={{ background: 'rgba(0,0,0,0.6)', padding: '4px 10px', borderRadius: '4px' }}>
+                    Ajustando enfoque y exposición...
+                  </span>
+                )}
+                <canvas ref={canvasRef} style={{ display: 'none' }} />
+              </div>
+
+              <div className="d-flex flex-wrap gap-2 mb-3">
+                {!stream ? (
+                  <CButton color="primary" onClick={startCamera} disabled={loading || cameraLoading}>
+                    {cameraLoading ? (
+                      <CSpinner size="sm" className="me-2" />
+                    ) : (
+                      <CIcon icon={cilVideo} className="me-2" />
+                    )}
+                    {cameraLoading ? 'Iniciando cámara...' : 'Iniciar cámara (iVCam / Externa)'}
+                  </CButton>
+                ) : (
+                  <>
+                    <CButton color="danger" onClick={stopCamera} disabled={loading}>
+                      Detener
+                    </CButton>
+                    <CButton
+                      color="info"
+                      variant="outline"
+                      onClick={() => setIsMirrored(!isMirrored)}
+                      disabled={loading}
+                      title="Invertir imagen horizontalmente"
+                    >
+                      <CIcon icon={cilSwapHorizontal} className="me-1" /> Espejo: {isMirrored ? 'ON' : 'OFF'}
+                    </CButton>
+                    <CButton color="success" onClick={capturePhoto} disabled={loading || !videoReady} className="ms-auto">
+                      <CIcon icon={cilCamera} className="me-2" />
+                      {videoReady ? 'Capturar foto' : 'Preparando...'}
+                    </CButton>
+                  </>
+                )}
+              </div>
+
+              <div className="mb-3">
+                <CFormLabel htmlFor="formFile">O seleccionar imagen (JPG / PNG)</CFormLabel>
+                <CFormInput type="file" id="formFile" accept="image/jpeg, image/png" onChange={handleFileChange} disabled={loading} />
+              </div>
+
+              <div className="d-flex gap-2">
+                <CButton color="success" className="w-50" onClick={detectarPlaca} disabled={loading || (!capturedImage && !selectedFile)}>
+                  {loading ? <CSpinner size="sm" /> : 'Detectar placa'}
+                </CButton>
+                <CButton color="secondary" className="w-50" onClick={reiniciarProceso} disabled={loading}>
+                  Procesar otra imagen
+                </CButton>
+              </div>
+            </CCardBody>
+          </CCard>
+        </CCol>
+
+        <CCol md={6}>
+          <CCard className="mb-4">
+            <CCardHeader>
+              <strong>Resultados del Monitoreo</strong>
+            </CCardHeader>
+            <CCardBody>
+              {loading && (
+                <div className="text-center py-5">
+                  <CSpinner color="primary" />
+                  <p className="mt-2">Procesando imagen con el servicio OCR...</p>
+                </div>
+              )}
+
+              {!loading && !resultado && (
+                <p className="text-muted text-center py-5">
+                  Enfoque con la cámara, presione «Capturar foto» y luego «Detectar placa».
+                </p>
+              )}
+
+              {!loading && resultado && (
+                <div>
+                  {imagenMarcada && (
+                    <div className="mb-3 text-center">
+                      <CImage
+                        src={imagenMarcada}
+                        alt="Vehículo con placa detectada"
+                        fluid
+                        className="rounded border"
+                        style={{ maxHeight: '220px' }}
+                      />
+                    </div>
+                  )}
+
+                  {resultado.estado === 'encontrado' && (
+                    <div>
+                      <CAlert color="success" className="d-flex align-items-center mb-3">
+                        <CIcon icon={cilCheckCircle} className="flex-shrink-0 me-2" size="lg" />
+                        <div>Vehículo Registrado - Autorizado para el ingreso.</div>
+                      </CAlert>
+                      <CTable small bordered>
+                        <CTableBody>
+                          <CTableRow><CTableDataCell><strong>Estado</strong></CTableDataCell><CTableDataCell>Encontrado</CTableDataCell></CTableRow>
+                          <CTableRow><CTableDataCell><strong>Placa</strong></CTableDataCell><CTableDataCell>{parseText(resultado.placa)}</CTableDataCell></CTableRow>
+                          <CTableRow><CTableDataCell><strong>Confianza</strong></CTableDataCell><CTableDataCell>{formatConfianza(resultado.confianza)}</CTableDataCell></CTableRow>
+                          <CTableRow><CTableDataCell><strong>Marca</strong></CTableDataCell><CTableDataCell>{parseText(resultado.vehiculo?.marca)}</CTableDataCell></CTableRow>
+                          <CTableRow><CTableDataCell><strong>Modelo</strong></CTableDataCell><CTableDataCell>{parseText(resultado.vehiculo?.modelo)}</CTableDataCell></CTableRow>
+                          <CTableRow><CTableDataCell><strong>Año</strong></CTableDataCell><CTableDataCell>{parseText(resultado.vehiculo?.anio)}</CTableDataCell></CTableRow>
+                          <CTableRow><CTableDataCell><strong>Color</strong></CTableDataCell><CTableDataCell>{parseText(resultado.vehiculo?.color)}</CTableDataCell></CTableRow>
+                          <CTableRow><CTableDataCell><strong>Tipo</strong></CTableDataCell><CTableDataCell>{parseText(resultado.vehiculo?.tipo)}</CTableDataCell></CTableRow>
+                          <CTableRow>
+                            <CTableDataCell><strong>Propietario</strong></CTableDataCell>
+                            <CTableDataCell className="d-flex align-items-center gap-2">
+                              {propietarioFoto && (
+                                <CImage
+                                  src={propietarioFoto}
+                                  alt="Propietario"
+                                  rounded="circle"
+                                  style={{ width: '32px', height: '32px', objectFit: 'cover' }}
+                                />
+                              )}
+                              <span>{propietarioNombre}</span>
+                            </CTableDataCell>
+                          </CTableRow>
+                          <CTableRow><CTableDataCell><strong>Cédula</strong></CTableDataCell><CTableDataCell>{propietarioCedula}</CTableDataCell></CTableRow>
+                          <CTableRow><CTableDataCell><strong>Autorización</strong></CTableDataCell><CTableDataCell><span className="badge bg-success">Autorizado</span></CTableDataCell></CTableRow>
+                        </CTableBody>
+                      </CTable>
+                    </div>
+                  )}
+
+                  {resultado.estado === 'no_registrado' && (
+                    <div>
+                      <CAlert color="danger" className="d-flex align-items-center mb-3">
+                        <CIcon icon={cilXCircle} className="flex-shrink-0 me-2" size="lg" />
+                        <div>
+                          <strong>VEHÍCULO NO REGISTRADO</strong>
+                          <br />No se autoriza el ingreso al parqueadero.
+                        </div>
+                      </CAlert>
+                      <CTable small bordered>
+                        <CTableBody>
+                          <CTableRow><CTableDataCell><strong>Estado</strong></CTableDataCell><CTableDataCell>No registrado</CTableDataCell></CTableRow>
+                          <CTableRow><CTableDataCell><strong>Placa detectada</strong></CTableDataCell><CTableDataCell>{parseText(resultado.placa)}</CTableDataCell></CTableRow>
+                          <CTableRow><CTableDataCell><strong>Confianza</strong></CTableDataCell><CTableDataCell>{formatConfianza(resultado.confianza)}</CTableDataCell></CTableRow>
+                          <CTableRow><CTableDataCell><strong>Autorización</strong></CTableDataCell><CTableDataCell><span className="badge bg-danger">No autorizado</span></CTableDataCell></CTableRow>
+                        </CTableBody>
+                      </CTable>
+                      <div className="mt-3">
+                        <CButton color="secondary" className="w-100" onClick={reiniciarProceso}>
+                          Procesar otra imagen
+                        </CButton>
+                      </div>
+                    </div>
+                  )}
+
+                  {resultado.estado === 'sin_placa' && (
+                    <div>
+                      <CAlert color="warning" className="d-flex align-items-center mb-3">
+                        <CIcon icon={cilWarning} className="flex-shrink-0 me-2" size="lg" />
+                        <div>No se detectó ninguna placa en la imagen.</div>
+                      </CAlert>
+                      <div className="mt-3">
+                        <CButton color="secondary" className="w-100" onClick={reiniciarProceso}>
+                          Procesar otra imagen
+                        </CButton>
+                      </div>
+                    </div>
+                  )}
+
+                  {resultado.estado === 'baja_confianza' && (
+                    <div>
+                      <CAlert color="warning" className="d-flex align-items-center mb-3">
+                        <CIcon icon={cilWarning} className="flex-shrink-0 me-2" size="lg" />
+                        <div>La confianza del OCR es baja. Se recomienda capturar la imagen nuevamente.</div>
+                      </CAlert>
+                      <div className="mt-3">
+                        <CButton color="secondary" className="w-100" onClick={reiniciarProceso}>
+                          Procesar otra imagen
+                        </CButton>
+                      </div>
+                    </div>
+                  )}
+
+                  {resultado.estado === 'multiples_placas' && (
+                    <div>
+                      <CAlert color="warning" className="d-flex align-items-center mb-3">
+                        <CIcon icon={cilWarning} className="flex-shrink-0 me-2" size="lg" />
+                        <div>Se detectaron varias placas en la imagen. Intente con un plano más cerrado.</div>
+                      </CAlert>
+                      <div className="mt-3">
+                        <CButton color="secondary" className="w-100" onClick={reiniciarProceso}>
+                          Procesar otra imagen
+                        </CButton>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </CCardBody>
+          </CCard>
+        </CCol>
+      </CRow>
+    </>
   )
 }
+
+export default MonitoreoEntrada
